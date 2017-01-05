@@ -27,6 +27,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //amountText.becomeFirstResponder()
         // Do any additional setup after loading the view, typically from a nib.
     }
 
@@ -42,7 +43,7 @@ class ViewController: UIViewController {
 
     @IBAction func onAmountChange(_ sender: AnyObject) {
         
-        if sender.text != ""{
+        if sender.text != "" {
             tipPercent = tipArray[tipIndex];
             var amountString = amountText.text!
             amountString.remove (at: amountString.startIndex)
