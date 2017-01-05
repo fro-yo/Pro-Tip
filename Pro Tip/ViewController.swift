@@ -15,7 +15,15 @@ class ViewController: UIViewController {
     @IBOutlet weak var amountText: UITextField!
     @IBOutlet weak var tipSelector: UISegmentedControl!
     
+    var tipArray = [0.10, 0.15, 0.20]
+    var tipArrayStrings = ["10%", "15%", "20%"]
     var tipPercent: Double = 0.15
+    var tipIndex: Int = 1
+    
+    var currency : Character = "$"
+    var currentTip : Double = 0
+    var currentTotal: Double = 0
+    var currencyIndex : Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,33 +36,75 @@ class ViewController: UIViewController {
     }
 
     @IBAction func tipChanged(_ sender: AnyObject) {
-        let currentIndex = tipSelector.selectedSegmentIndex;
-        
-        var title: String = tipSelector.titleForSegment(at: currentIndex)!
-        
-        print (title)
-        title.remove(at: title.index(before: title.endIndex))
-        
-        print (title)
-        
-        tipPercent = Double (title) ?? 0
-        tipPercent = tipPercent * 0.01
+        tipIndex = tipSelector.selectedSegmentIndex;
         onAmountChange(sender);
     }
 
     @IBAction func onAmountChange(_ sender: AnyObject) {
         
-        let amount = Double(amountText.text!) ?? 0
-        let tip = tipPercent * amount
-        let total = amount + tip;
+        if sender.text != ""{
+            tipPercent = tipArray[tipIndex];
+            var amountString = amountText.text!
+            amountString.remove (at: amountString.startIndex)
+            
+            let amount = Double(amountString) ?? 0
+            currentTip = tipPercent * amount
+            currentTotal = amount + currentTip;
+            
+            tipLabel.text = String (format: String(currency)+"%.2f", currentTip)
+            totalLabel.text = String (format: String(currency)+"%.2f", currentTotal)
+        }
         
-        tipLabel.text = String (format: "$%.2f", tip)
-        totalLabel.text = String (format: "$%.2f", total)
+        else {
+            amountText.text = String(currency)+"0"
+            tipLabel.text = String(currency)+"0.00"
+            totalLabel.text = String(currency)+"0.00"
+        }
     }
     
+    
     @IBAction func onTap(_ sender: Any) {
-        
         view.endEditing(true)
     }
+    
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?){
+        if segue.identifier == "settingsSegue" {
+            let settingsController = segue.destination as! SettingsController
+            settingsController.tipArray = tipArray
+            settingsController.tipArrayStrings = tipArrayStrings
+            settingsController.currency = currency
+            settingsController.currencyIndex = currencyIndex
+        }   
+    }
+    
+    @IBAction func saveSettings (segue: UIStoryboardSegue) {
+        let settingsController = segue.source as! SettingsController
+        currency = settingsController.currency;
+        tipArray = settingsController.tipArray;
+        currencyIndex = settingsController.currencyIndex
+        tipArrayStrings = settingsController.tipArrayStrings;
+        tipSelector.setTitle(tipArrayStrings[0], forSegmentAt: 0)
+        tipSelector.setTitle(tipArrayStrings[1], forSegmentAt: 1)
+        tipSelector.setTitle(tipArrayStrings[2], forSegmentAt: 2)
+        updateCurrency();
+        onAmountChange(amountText)
+    }
+    
+    func updateCurrency () {
+        tipLabel.text = String (format: String(currency)+"%.2f", currentTip)
+        totalLabel.text = String (format: String(currency)+"%.2f", currentTotal)
+        
+        if ((amountText.text?.characters.count)! > 1) {
+            var amountString = amountText.text!
+            amountString.remove (at: amountString.startIndex)
+            amountText.text = String(currency) + amountString
+        }
+            
+        else {
+            amountText.text = String(currency)
+        }
+    }
+
 }
 
